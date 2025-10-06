@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: nextjs
-          image: ghcr.io/<GITHUB_USERNAME>/nextjs-devops-assessment:latest
+          image: ghcr.io/rayyandevops-coder/nextjs-devops-assessment:latest
           ports:
             - containerPort: 3000
           livenessProbe:
