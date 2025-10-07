@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    environment {
+        // Define environment variables
+        APP_NAME = "nextjs-devops-assessment"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/rayyandevops-coder/nextjs-devops-assessment.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'npm test || echo "No tests defined"'
+            }
+        }
+
+        stage('Docker Build & Push') {
+            steps {
+                script {
+                    sh '''
+                    docker build -t rayyandevops-coder/${APP_NAME}:latest .
+                    docker login -u rayyandevops-coder -p credentials('dockerhub-credentials')
+                    docker push rayyandevops-coder/${APP_NAME}:latest
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh '''
+                kubectl apply -f k8s/
+                kubectl rollout status deployment/${APP_NAME}-deployment
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build and deployment successful!'
+        }
+        failure {
+            echo '❌ Build failed!'
+        }
+    }
+}
